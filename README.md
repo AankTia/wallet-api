@@ -6,6 +6,11 @@ application up and running.
 Things you may want to cover:
 
 * Ruby version
+rvm use 3.0.4
+
+gem install rails -v 6.1.6
+rvm gemset create wallet-api
+rvm 3.0.4@wallet-api --create
 
 * System dependencies
 
