@@ -1,0 +1,14 @@
+development:
+  # Configure available database clients. (required)
+  clients:
+    # Defines the default client. (required)
+    default:
+      database: wallet
+      hosts:
+        - 0.0.0.0:27020
+      options:
+        user: 'tw'
+        password: 'tw123'
+  # Configure Mongoid specific options. (optional)
+  options:
+    raise_not_found_error: false
