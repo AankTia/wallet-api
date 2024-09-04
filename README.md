@@ -13,7 +13,12 @@ Things you may want to cover:
 
 * Database creation
 
+docker pull tiawidi/mongo:6.0.2
+
 * Database initialization
+mongosh --host localhost --port 27017 -u "root.admin" -p "root.admin.password" --authenticationDatabase admin
+use wallet
+db.createUser({user: "tw", pwd: "tw123", roles: ["readWrite"]})
 
 * How to run the test suite
 
