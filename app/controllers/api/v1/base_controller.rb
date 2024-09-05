@@ -12,6 +12,7 @@ module Api
           auth_payload = JwtAuth.decode(header_token)
           if auth_payload['uid'] == header_uid
             @current_user = User.find(auth_payload['uid'])
+            @wallet = @current_user&.wallet
           end
         end
 

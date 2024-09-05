@@ -9,9 +9,10 @@ class Wallet
   
   belongs_to :user, class_name: 'User', index: true
   belongs_to :currency, class_name: 'Currency', index: true
+  has_many :transactions, class_name: 'Transaction'
 
   def balance_with_currency
-    splited_balance = balance.to_s.split('.')
+    splited_balance = balance.round(currency.decimal_round).to_s.split('.')
     non_decimal_value = splited_balance.first
     decimal_value = splited_balance.last
 
@@ -26,5 +27,9 @@ class Wallet
     else
       "#{formated_balance} #{currency.symbol}"
     end
+  end
+
+  def debit(value)
+    inc(balance: value)
   end
 end

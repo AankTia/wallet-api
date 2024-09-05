@@ -13,6 +13,7 @@ class Currency
   field :symbol_first, type: Boolean, default: true
   field :thousands_separator, type: String, default: '.'
   field :decimal_mark, type: String, default: ','
+  field :decimal_round, type: Integer, default: 2
 
   validates_presence_of :iso_code, :name, :symbol
   validates_uniqueness_of :iso_code

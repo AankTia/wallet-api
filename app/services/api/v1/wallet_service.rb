@@ -2,8 +2,7 @@ module Api::V1
   class WalletService
 
     def get_balance(user)
-      wallet = user.wallet
-      if wallet.present?
+      if @wallet.present?
         return {
           status: :success,
           data: {
