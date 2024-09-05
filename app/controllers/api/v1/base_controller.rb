@@ -24,9 +24,11 @@ module Api
         render json: { message: message }, status: :unauthorized
       end
 
-      def render_json_result(result)
+      def render_json_result(result=nil)
+        return render_json_no_content if result.nil?
+
         case result[:status]
-        when :success, :data_not_found
+        when :success
           render_json_success(result[:status].to_s, result[:data])
         else
           render_json_failed result[:data]
@@ -39,6 +41,14 @@ module Api
 
       def render_json_failed(data)
         render json: { code: 200, status: 'failed', data: data }
+      end
+
+      def render_json_unprocessable_entity(message=nil)
+        render json: { errors: (message || 'Unprocessable Entity') }, status: :unprocessable_entity
+      end
+
+      def render_json_no_content(message=nil)
+        render json: { errors: (message || 'No Content') }, status: :no_content
       end
 
       def render_json_bad_request(message=nil)

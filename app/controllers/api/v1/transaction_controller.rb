@@ -8,13 +8,24 @@ module Api
       end
 
       def deposit
-        transaction_params = params.require(:transaction).permit(:amount)
+        deposit_params = params.require(:transaction).permit(:amount)
         
-        amount_validator = validate_amount(transaction_params[:amount])
+        amount_validator = validate_amount(deposit_params[:amount])
         if amount_validator.valid?
-          render_json_result(@transaction_service.deposit(@wallet, transaction_params[:amount]))
+          render_json_result(@transaction_service.deposit(@wallet, deposit_params[:amount]))
         else
-          render_json_bad_request(amount_validator.message)
+          render_json_unprocessable_entity(amount_validator.message)
+        end
+      end
+
+      def withdraw
+        withdraw_params = params.require(:transaction).permit(:amount)
+        
+        amount_validator = validate_amount(withdraw_params[:amount])
+        if amount_validator.valid?
+          render_json_result(@transaction_service.withdraw(@wallet, withdraw_params[:amount]))
+        else
+          render_json_unprocessable_entity(amount_validator.message)
         end
       end
 

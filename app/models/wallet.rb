@@ -29,7 +29,11 @@ class Wallet
     end
   end
 
-  def debit(value)
+  def credit(value)
     inc(balance: value)
+  end
+
+  def debit(value)
+    inc(balance: -value)
   end
 end

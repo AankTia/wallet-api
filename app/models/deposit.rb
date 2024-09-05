@@ -6,7 +6,7 @@ class Deposit < Transaction
 
     begin
       if !amount.zero?
-        wallet.debit(amount)
+        wallet.credit(amount)
         if wallet.balance > ballance_before
           update(status: SUCCESS)
         else
