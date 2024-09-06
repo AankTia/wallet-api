@@ -11,6 +11,10 @@ module Api
         render_json_result(@transaction_service.detail(@current_user, params[:id]))
       end
 
+      def history
+        render_json_result(@transaction_service.history(@wallet))
+      end
+
       def deposit
         deposit_params = params.require(:transaction).permit(:amount)
         

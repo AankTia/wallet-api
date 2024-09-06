@@ -10,29 +10,17 @@ module Api::V1
                                   transaction.transfer_type? && user.id == transaction&.receiver_wallet&.user_id
       end
 
-      return { status: :data_not_found, data: { message: "Transaction is not Exists" } } unless is_valid_transaction
-
-      data = {
-        id: transaction.id.to_s,
-        type: transaction._type,
-        amount: transaction.amount,
-        status: transaction.status,
-        notes: transaction.notes,
-        transaction_at: transaction.updated_at.to_s,
-        wallet: {
-          phone_number: transaction&.wallet&.phone_number,
-          user_fullname: transaction&.wallet&.user&.fullname
-        }
-      }
-
-      if transaction.transfer_type?
-        data[:receiver] = {
-          phone_number: transaction&.receiver_wallet&.phone_number,
-          user_fullname: transaction&.receiver_wallet&.user.fullname
-        }
+      if is_valid_transaction
+        return { status: :success, data: generate_transaction_detail(transaction) }
+      else
+        return { status: :data_not_found, data: { message: "Transaction is not Exists" } }
       end
+    end
 
-      return { status: :success, data: data }
+    def history(wallet)
+      datas = wallet.transactions.order_by(updated_at: :desc)
+                    .map{ |tr| generate_transaction_detail(tr) }
+      return { status: :success, data: datas }
     end
 
     def deposit(wallet, amount)
@@ -233,6 +221,30 @@ module Api::V1
     end
 
     private
+
+    def generate_transaction_detail(transaction)
+      data = {
+        id: transaction.id.to_s,
+        type: transaction._type,
+        amount: transaction.amount,
+        status: transaction.status,
+        notes: transaction.notes,
+        transaction_at: transaction.updated_at.to_s,
+        wallet: {
+          phone_number: transaction&.wallet&.phone_number,
+          user_fullname: transaction&.wallet&.user&.fullname
+        }
+      }
+
+      if transaction.transfer_type?
+        data[:receiver] = {
+          phone_number: transaction&.receiver_wallet&.phone_number,
+          user_fullname: transaction&.receiver_wallet&.user.fullname
+        }
+      end
+
+      data
+    end
 
     def validate_transfer_data(sender_number: nil, receiver_number: nil, amount: nil)
       result = Struct.new('TransferValidatorResult', :valid?, :sender_wallet, :receiver_wallet, :amount, :error_messages)

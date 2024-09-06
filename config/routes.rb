@@ -22,7 +22,7 @@ Rails.application.routes.draw do
           post 'withdraw'
           post 'transfer'
           get 'detail/:id', action: :detail, as: 'detail'
-          post 'history'
+          get 'history'
         end
       end
     end
