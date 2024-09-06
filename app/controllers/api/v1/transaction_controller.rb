@@ -7,6 +7,10 @@ module Api
         @transaction_service = Api::V1::TransactionService.new
       end
 
+      def detail
+        render_json_result(@transaction_service.detail(@current_user, params[:id]))
+      end
+
       def deposit
         deposit_params = params.require(:transaction).permit(:amount)
         

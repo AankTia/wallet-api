@@ -1,6 +1,40 @@
 module Api::V1
   class TransactionService
 
+    def detail(user, transaction_id)
+      transaction = Transaction.find(transaction_id)
+
+      is_valid_transaction = false
+      if transaction.present?
+        is_valid_transaction = (user.id == transaction&.wallet&.user_id) ||
+                                  transaction.transfer_type? && user.id == transaction&.receiver_wallet&.user_id
+      end
+
+      return { status: :data_not_found, data: { message: "Transaction is not Exists" } } unless is_valid_transaction
+
+      data = {
+        id: transaction.id.to_s,
+        type: transaction._type,
+        amount: transaction.amount,
+        status: transaction.status,
+        notes: transaction.notes,
+        transaction_at: transaction.updated_at.to_s,
+        wallet: {
+          phone_number: transaction&.wallet&.phone_number,
+          user_fullname: transaction&.wallet&.user&.fullname
+        }
+      }
+
+      if transaction.transfer_type?
+        data[:receiver] = {
+          phone_number: transaction&.receiver_wallet&.phone_number,
+          user_fullname: transaction&.receiver_wallet&.user.fullname
+        }
+      end
+
+      return { status: :success, data: data }
+    end
+
     def deposit(wallet, amount)
       if !wallet.present?
         return { status: :data_not_found, data: { message: "Wallet is not Exists" } }

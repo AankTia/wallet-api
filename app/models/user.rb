@@ -40,6 +40,6 @@ class User
     end
 
     def fullname
-      "#{self.firstname} #{self.lastname}".strip
+      "#{self.first_name} #{self.last_name}".strip
     end
 end

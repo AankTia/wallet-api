@@ -36,4 +36,8 @@ class Transaction
   def is_error?
     status == ERROR
   end
+
+  def transfer_type?
+    _type == 'Transfer'
+  end
 end

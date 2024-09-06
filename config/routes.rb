@@ -21,7 +21,7 @@ Rails.application.routes.draw do
           post 'deposit'
           post 'withdraw'
           post 'transfer'
-          post 'status'
+          get 'detail/:id', action: :detail, as: 'detail'
           post 'history'
         end
       end
