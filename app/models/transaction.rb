@@ -17,9 +17,13 @@ class Transaction
   field :notes, type: String, default: ''
 
   validates_presence_of :amount
-  validates_numericality_of :amount
+  validates_numericality_of :amount, if: :amount_present?
 
   validates :status, inclusion: { in: [ON_PROGRESS, SUCCESS, FAILED], message: "%{value} is not a valid status" }
+
+  def amount_present?
+    amount.present?
+  end
 
   def is_success?
     status == SUCCESS

@@ -3,6 +3,9 @@ class User
     include Mongoid::Timestamps
     include Mongoid::Attributes::Dynamic #For dynamic field in mongoDB documents #Prevent missing attribute error
 
+    before_save :set_auth_token, if: :new_record?
+    after_save :init_wallet, if: :wallet_not_exists?
+    
     store_in collection: 'users'
 
     has_one :wallet, class_name: 'Wallet'
@@ -20,8 +23,20 @@ class User
 
     index({email: 1})
 
-    def generate_authentication_token!
-      update(auth_token: JwtAuth.encode({uid: id.to_s, friendly_token: SecureRandom.uuid}))
+    def set_auth_token
+      auth_token = generate_auth_token
+    end
+
+    def init_wallet
+      Wallet.init_for_user(self)
+    end
+
+    def wallet_not_exists?
+      !wallet.present?
+    end
+
+    def generate_auth_token
+      JwtAuth.encode({uid: id.to_s, friendly_token: SecureRandom.uuid})
     end
 
     def fullname

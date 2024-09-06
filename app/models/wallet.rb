@@ -5,11 +5,15 @@ class Wallet
 
   store_in collection: 'wallets'
   
-  field :balance, type: Float, default: 0.0
-  
   belongs_to :user, class_name: 'User', index: true
   belongs_to :currency, class_name: 'Currency', index: true
   has_many :transactions, class_name: 'Transaction'
+  
+  field :phone_number, type: String 
+  field :balance, type: Float, default: 0.0
+
+  validates_presence_of :phone_number
+  validates_uniqueness_of :user_id
 
   def balance_with_currency
     splited_balance = balance.round(currency.decimal_round).to_s.split('.')
@@ -35,5 +39,17 @@ class Wallet
 
   def debit(value)
     inc(balance: -value)
+  end
+  
+  # Class methods
+  class << self
+    def init_for_user(user, currency_code='IDR')
+      currency = Currency.find_by(iso_code: currency_code)
+      create!(user: user, phone_number: user.phone_number, currency: currency)
+    end
+
+    def find_by_phone_number(phone_number)
+      find_by(phone_number: phone_number)
+    end
   end
 end

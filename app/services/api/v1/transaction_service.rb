@@ -138,5 +138,102 @@ module Api::V1
         }
       end
     end
+
+    def transfer(sender_number: nil, receiver_number: nil, amount: nil)
+      data_result = {
+        message: '',
+        amount: amount,
+        sender_wallet: {},
+        receiver_wallet: {},
+        transaction: {}
+      }
+
+      transfer_data = validate_transfer_data(sender_number: sender_number, receiver_number: receiver_number, amount: amount)
+      if transfer_data.valid?
+        sender_balance_with_currency_before = transfer_data.sender_wallet.balance_with_currency
+        receiver_balance_with_currency_before = transfer_data.receiver_wallet.balance_with_currency
+
+        transaction = Transfer.new(
+          wallet_id: transfer_data.sender_wallet&.id, 
+          receiver_wallet_id: transfer_data.receiver_wallet&.id,
+          amount: amount
+        )
+        if transaction.save
+          transfer_data.sender_wallet.reload
+          transfer_data.receiver_wallet.reload
+
+          data_result[:message] = transaction.notes
+          data_result[:transaction] = {
+            type: transaction._type,
+            id: transaction.id.to_s,
+            status: transaction.status
+          }
+          data_result[:sender_wallet] = {
+            number: transfer_data.sender_wallet&.user&.phone_number,
+            balance: {
+              before: sender_balance_with_currency_before,
+              after: transfer_data.sender_wallet.balance_with_currency
+            }
+          }
+          data_result[:receiver_wallet] = {
+            number: transfer_data.receiver_wallet&.user&.phone_number,
+            balance: {
+              before: receiver_balance_with_currency_before,
+              after: transfer_data.receiver_wallet.balance_with_currency
+            }
+          }
+
+          if transaction.is_success?
+            return { status: :success, data: data_result }
+          else
+            return { status: :failed, data: data_result }
+          end
+        else
+          data_result[:message] = transaction.errors.full_messages.to_sentence
+          return { status: :failed, data: data_result }
+        end
+      else
+        data_result[:message] = transfer_data.error_messages
+        return { status: :failed, data: data_result }
+      end
+    end
+
+    private
+
+    def validate_transfer_data(sender_number: nil, receiver_number: nil, amount: nil)
+      result = Struct.new('TransferValidatorResult', :valid?, :sender_wallet, :receiver_wallet, :amount, :error_messages)
+
+      sender_wallet = nil
+      receiver_wallet = nil
+      error_messages = []
+
+      if sender_number.present?
+        sender_wallet = Wallet.find_by_phone_number(sender_number)
+        if sender_wallet.present? 
+          if amount.present?
+            if amount > sender_wallet.balance
+              error_messages << 'Transfer Amount Exceeds Sender Wallet Balance'
+            end
+          else
+            error_messages << 'Amount is Empty' 
+          end
+        else
+          error_messages << 'Sender Wallet is Not Exists'
+        end
+      else
+        error_messages << 'Sender Wallet Number is Empty'
+      end
+
+      if receiver_number.present?
+        receiver_wallet = Wallet.find_by_phone_number(receiver_number)
+        error_messages << 'Receiver Wallet is not exists' unless receiver_wallet.present?
+      else
+        error_messages << "Receiver Wallet Number is Empty"
+      end
+
+      error_messages = error_messages.to_sentence
+
+      result.new(!error_messages.present?, sender_wallet, receiver_wallet, amount, error_messages)
+    end
   end
 end

@@ -8,6 +8,8 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
+require 'faker'
+
 puts "Seed Currencies Start"
 currencies_data = [
   { iso_code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp', symbol_first: true, decimal_mark: ',', thousands_separator: '.' },
@@ -32,3 +34,27 @@ currencies_data.each do |data|
   end
 end
 puts "Seed Currencies Finished"
+
+puts "==="
+puts "Seed Users Start"
+10.times do
+  full_name = Faker::Name.name
+  splitted_fullname = full_name.split(' ')
+  first_name = splitted_fullname[0]
+  last_name = splitted_fullname[1..(splitted_fullname.size-1)].join(' ')
+
+  phone_number = Faker::PhoneNumber.cell_phone_in_e164.gsub(' ', '').scan(/\d/).join
+  
+  data = { 
+    email: Faker::Internet.email, 
+    phone_number: phone_number,
+    user_name: first_name.downcase, 
+    first_name: first_name, 
+    last_name: last_name, 
+  }
+
+  user = User.new(data)
+  user.save
+end
+puts "Seed Users Finished"
+

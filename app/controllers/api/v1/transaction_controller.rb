@@ -29,6 +29,21 @@ module Api
         end
       end
 
+      def transfer
+        amount_validator = validate_amount(params[:amount])
+        if amount_validator.valid?
+          render_json_result(
+            @transaction_service.transfer(
+              sender_number: params[:sender_number], 
+              receiver_number: params[:receiver_number], 
+              amount: params[:amount]
+            )
+          )
+        else
+          render_json_unprocessable_entity(amount_validator.message)
+        end
+      end
+
       private
 
       AmountValidator = Struct.new(:valid?, :message)
